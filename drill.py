@@ -42,7 +42,7 @@ def tokenize_dataset(ds_dict: DatasetDict, tokenizer_name: str, max_length: int)
 
 def make_training_args(output_dir: str, lr: float, epochs: int, batch_size: int, seed: int) -> TrainingArguments:
     """Build a TrainingArguments with the standard fine-tuning configuration."""
-    return TrainingArguments(
+    args = TrainingArguments(
         output_dir=output_dir,
         learning_rate=lr,
         num_train_epochs=epochs,
@@ -53,6 +53,12 @@ def make_training_args(output_dir: str, lr: float, epochs: int, batch_size: int,
         save_strategy="epoch",
         logging_steps=50,
     )
+    # Fix for older transformers versions that store strategies as enums
+    if hasattr(args.eval_strategy, "value"):
+        args.eval_strategy = args.eval_strategy.value
+    if hasattr(args.save_strategy, "value"):
+        args.save_strategy = args.save_strategy.value
+    return args
 
 
 def compute_metrics(eval_pred):
